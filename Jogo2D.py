@@ -206,7 +206,7 @@ def jogar():
                 if event.key == K_x:    # tecla 'x':    encerra o programa
                     sair()
 
-                elif event.key == K_SPACE:
+                elif event.key == K_SPACE:  # tecla 'espaço':   efetua disparo
                     nave.dispara()              
 
         tecla_pressionada = pygame.key.get_pressed()
