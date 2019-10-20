@@ -234,8 +234,8 @@ def jogar():
             if p.duracao > PROJETIL_DURACAO:
                 projeteis.remove(p)
                 continue
-            p.move()
             p.desenha()
+            p.move()
         pygame.display.update()
         FPSCLOCK.tick(TELA_FPS)
 
