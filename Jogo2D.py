@@ -32,12 +32,12 @@ TELA_FPS = 15
 # configurações padrões da nave
 NAVE_TRACO_LARGURA = 3
 NAVE_TRACO_COR = CINZA
-NAVE_ROTACAO_ANGULO = np.pi / 16      # na tela, o sentido positivo do eixo 'y' é para baixo, logo o sentido positivo de rotação é o horário
+NAVE_ROTACAO_ANGULO = np.pi / 64      # na tela, o sentido positivo do eixo 'y' é para baixo, logo o sentido positivo de rotação é o horário
 
 # configurações padrões do projétil
 PROJETIL_TRACO_LARGURA = 2
 PROJETIL_TRACO_COR = VERDE
-PROJETIL_VELOCIDADE = 8
+PROJETIL_VELOCIDADE = 20
 PROJETIL_DURACAO = 50
 
 
@@ -110,12 +110,12 @@ class Nave:
     # efetua disparos
     def dispara(self):
         # coordenadas do canhão 1
-        canhao1 = np.array([[self.vertices[0,0]],
-                            [self.vertices[1,0]],
+        canhao1 = np.array([[self.vertices[0,29]],
+                            [self.vertices[1,29]],
                             [1.]])
         # coordenadas do canhão 2
-        canhao2 = np.array([[self.vertices[0,23]],
-                            [self.vertices[1,23]],
+        canhao2 = np.array([[self.vertices[0,31]],
+                            [self.vertices[1,31]],
                             [1.]])
         projetil1 = Projetil(canhao1, self.orientacao)
         projetil2 = Projetil(canhao2, self.orientacao)
@@ -207,8 +207,7 @@ def jogar():
                     sair()
 
                 elif event.key == K_SPACE:
-                    nave.dispara()  
-                    
+                    nave.dispara()              
 
         tecla_pressionada = pygame.key.get_pressed()
         if tecla_pressionada[K_w]:      # tecla 'w':    movimenta nave para frente
@@ -226,16 +225,15 @@ def jogar():
         if tecla_pressionada[K_d]:      # tecla 'd':    gira nave no sentido horário
             nave.rotacao(NAVE_ROTACAO_ANGULO)
 
-
         # atualiza tela
-        DISPLAYSURF.fill(TELA_COR_FUNDO)
-        nave.desenha()
+        DISPLAYSURF.fill(TELA_COR_FUNDO)        
         for p in projeteis:
             if p.duracao > PROJETIL_DURACAO:
                 projeteis.remove(p)
-                continue
+                continue            
             p.desenha()
-            p.move()
+            p.move()        
+        nave.desenha()
         pygame.display.update()
         FPSCLOCK.tick(TELA_FPS)
 
