@@ -6,9 +6,12 @@ https://github.com/rafaeljc/ala-simulador-jogo2d
 '''
 
 # instalação:   python3 -m pip install --user numpy
+#               python3 -m pip install -U pygame --user
+
+
+# importações necessárias para executar o programa
 import numpy as np
 
-# instalação:   python3 -m pip install -U pygame --user
 import pygame, sys
 from pygame.locals import *
 
@@ -17,28 +20,29 @@ from pygame.locals import *
 '''
 CONSTANTES
 '''
-# cores (em RGB)
+# definição das cores (em RGB)
 PRETO = (0, 0, 0)
 CINZA = (166, 166, 166)
 VERDE = (45, 253, 4)
 
-# configurações
+# configurações do simulador
 TELA_TITULO = 'ALA 2019.2 - Simulador Jogo2D'
 TELA_LARGURA = 800
 TELA_ALTURA = 600
 TELA_COR_FUNDO = PRETO
-TELA_FPS = 15
+TELA_FPS = 15   # taxa de atualização da tela (em quadros por segundo)
 
-# configurações padrões da nave
+# configurações da nave
 NAVE_TRACO_LARGURA = 3
 NAVE_TRACO_COR = CINZA
-NAVE_ROTACAO_ANGULO = np.pi / 64      # na tela, o sentido positivo do eixo 'y' é para baixo, logo o sentido positivo de rotação é o horário
+NAVE_ROTACAO_ANGULO = np.pi / 64    # em radianos
+# na tela, o sentido positivo do eixo 'y' é para baixo, logo o sentido positivo de rotação é o horário
 
-# configurações padrões do projétil
+# configurações do projétil
 PROJETIL_TRACO_LARGURA = 2
 PROJETIL_TRACO_COR = VERDE
 PROJETIL_VELOCIDADE = 20
-PROJETIL_DURACAO = 50
+PROJETIL_DURACAO = 50   # por quantos 'ciclos' o projétil irá existir
 
 
 
@@ -47,37 +51,36 @@ NAVE
 '''
 class Nave:
 
+    # rotina de iniciação de uma nova nave
     def __init__(self):
-        # vértices que formam a nave
+        # define os vértices que formam a nave
         self.vertices = np.array([[5., 2.,  0.,  0.,   2.,   5.,   28.,  28.,  40.,  43.,  48.,  52.,  72.,  76.,  81.,  84.,  96.,  96.,  119., 122., 124., 124., 122., 119., 96., 96., 84., 81., 75., 70., 62., 54., 49., 43., 40., 28., 28., 5.], 
                                   [0., 92., 96., 105., 109., 147., 127., 107., 109., 113., 118., 126., 126., 118., 113., 109., 107., 127., 147., 109., 105., 96.,  92.,  0.,   87., 94., 92., 87., 81., 78., 77., 78., 81., 87., 92., 94., 87., 0.], 
                                   [1., 1.,  1.,  1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.]])
-        # centro da nave
+        # define o centro da nave
         self.centro = np.array([[62.], 
                                 [100.],
                                 [1.  ]])
-        # vetor que orienta a movimentação da nave
-        # módulo vetor: velociade da nave
+        # define o vetor que orienta a movimentação da nave
+        # módulo do vetor: velociade da nave
         self.orientacao = np.array([[0.],
                                     [-4.],
                                     [1.]])
-        # largura traço da nave
+        # define a largura do traço que a nave será desenhada
         self.traco_largura = NAVE_TRACO_LARGURA
-        # cor traço da nave
+        # define a cor do traço da nave
         self.traco_cor = NAVE_TRACO_COR
-        # ajusta tamanho da nave
-        self.escala(0.5)
-        # ajusta posição da nave pro centro da tela
-        pra_origem = np.array([[-self.centro[0,0]],
-                               [-self.centro[1,0]],
-                               [1.]])
-        self.move(pra_origem)
-        pro_centro_tela = np.array([[TELA_LARGURA / 2],
-                                    [TELA_ALTURA / 2],
-                                    [1.]])
+        # ajusta o tamanho da nave
+        self.escala(0.5)    # reduz à metade
+        # ajusta posição da nave para o centro da tela
+        # calcula o vetor diferença entre o centro da tela e o centro da nave
+        # e depois a move
+        pro_centro_tela = np.array([[ (TELA_LARGURA / 2) - self.centro[0,0] ],
+                                    [ (TELA_ALTURA / 2) - self.centro[1,0] ],
+                                    [ 1. ]])
         self.move(pro_centro_tela)
         
-    # desenha a nave na tela ligando os vértices
+    # desenha a nave na tela traçando retas entre os vértices que a formam
     def desenha(self):
         quantidade_colunas = self.vertices.shape[1]
         for i in range(quantidade_colunas - 1):
@@ -100,7 +103,7 @@ class Nave:
         self.orientacao = rotacao @ self.orientacao
         return
   
-    # move a nave no sentido do vetor orientação
+    # move a nave no sentido do seu vetor orientação
     def move(self, vetor):
         translacao = matrizTranslacao(vetor)
         self.vertices = translacao @ self.vertices
@@ -117,8 +120,11 @@ class Nave:
         canhao2 = np.array([[self.vertices[0,31]],
                             [self.vertices[1,31]],
                             [1.]])
+        # gera os projéteis com base na posição dos canhões e vetor orientação da nave
         projetil1 = Projetil(canhao1, self.orientacao)
         projetil2 = Projetil(canhao2, self.orientacao)
+        # após gerar os projéteis, armazene-os na lista de projéteis ativos
+        # para que possam ser desenhados na tela
         projeteis.append(projetil1)
         projeteis.append(projetil2)
         return
@@ -130,24 +136,24 @@ PROJÉTIL
 '''
 class Projetil:
 
+    # rotina de iniciação de um novo projétil
     def __init__(self, ponto, vetor):
-
-        # define vértices
+        # define os vértices do projétil
         self.vertices = np.array([[ponto[0,0], ponto[0,0] + vetor[0,0]],
                                   [ponto[1,0], ponto[1,0] + vetor[1,0]],
                                   [1.,         1.]])
-        # vetor que orienta a movimentação do projétil
+        # define o vetor que orienta a movimentação do projétil
         self.orientacao = np.array([[PROJETIL_VELOCIDADE * vetor[0,0]], 
                                     [PROJETIL_VELOCIDADE * vetor[1,0]],
                                     [1.]])
-        # largura traço do projétil
+        # define a largura do traço que o projétil será desenhado
         self.traco_largura = PROJETIL_TRACO_LARGURA
-        # cor traço do projétil
+        # define a cor traço do projétil
         self.traco_cor = PROJETIL_TRACO_COR
-        # duração do projétil
+        # inicia o contador de duração do projétil
         self.duracao = 0
 
-    # desenha o disparo na tela ligando os vértices
+    # desenha o projétil na tela traçando uma reta entre os vértices que o formam
     def desenha(self):
         quantidade_colunas = self.vertices.shape[1]
         for i in range(quantidade_colunas - 1):
@@ -156,7 +162,7 @@ class Projetil:
             pygame.draw.line(DISPLAYSURF, self.traco_cor, ponto_inicial, ponto_final, self.traco_largura)
         return
 
-    # move o projétil no sentido da nave no momento do disparo
+    # move o projétil no sentido do seu vetor orientação
     def move(self):
         translacao = matrizTranslacao(self.orientacao)
         self.vertices = translacao @ self.vertices
