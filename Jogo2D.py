@@ -36,7 +36,6 @@ TELA_FPS = 15   # taxa de atualização da tela (em quadros por segundo)
 NAVE_TRACO_LARGURA = 3
 NAVE_TRACO_COR = CINZA
 NAVE_ROTACAO_ANGULO = np.pi / 64    # em radianos
-# na tela, o sentido positivo do eixo 'y' é para baixo, logo o sentido positivo de rotação é o horário
 
 # configurações do projétil
 PROJETIL_TRACO_LARGURA = 2
@@ -90,12 +89,18 @@ class Nave:
         return
 
     # altera o tamanho da nave
+    # gera a matriz de transformação com base no vetor centro e depois
+    # a aplica na matriz dos vértices que compõem a nave
     def escala(self, valor):
         escala_centro = matrizEscalaPontoArbitrario(valor, self.centro)
         self.vertices = escala_centro @ self.vertices
         return
 
     # gira a nave um determinado ângulo
+    # gera as matrizes de transformação, rotação e rotação em um ponto (centro da nave)
+    # e as aplica, respectivamente, na matriz dos vértices que compõem a nave e no vetor
+    # orientação da nave (nesse vetor, não foi aplicada a rotação em um ponto arbitrário
+    # pois ele sempre estará na origem)
     def rotacao(self, angulo):
         rotacao = matrizRotacao(angulo)
         rotacao_centro = matrizRotacaoPontoArbitrario(angulo, self.centro)
@@ -104,6 +109,8 @@ class Nave:
         return
   
     # move a nave no sentido do seu vetor orientação
+    # gera a matriz de transformação com base no vetor passado como parâmetro
+    # e a aplica na matriz dos vértices que compõem a nave e no vetor centro
     def move(self, vetor):
         translacao = matrizTranslacao(vetor)
         self.vertices = translacao @ self.vertices
@@ -112,6 +119,7 @@ class Nave:
 
     # efetua disparos
     def dispara(self):
+        # os canhões são dois dos vértices da nave
         # coordenadas do canhão 1
         canhao1 = np.array([[self.vertices[0,29]],
                             [self.vertices[1,29]],
@@ -163,6 +171,9 @@ class Projetil:
         return
 
     # move o projétil no sentido do seu vetor orientação
+    # gera a matriz de transformação com base no vetor orientação do projétil
+    # e a aplica na matriz dos vértices que compõem o projétil e, após isso,
+    # incrementa o contador de duração
     def move(self):
         translacao = matrizTranslacao(self.orientacao)
         self.vertices = translacao @ self.vertices
@@ -174,29 +185,27 @@ class Projetil:
 '''
 SIMULADOR
 '''
+# função 'main'
 def main():
-
     iniciar()
-
-    while True:
-        jogar()
+    jogar()
 
 
-
+# função que executa a rotina de iniciação do programa
 def iniciar():
 
     global FPSCLOCK, DISPLAYSURF, nave, projeteis
 
-    pygame.init()
-    FPSCLOCK = pygame.time.Clock()
-    DISPLAYSURF = pygame.display.set_mode((TELA_LARGURA, TELA_ALTURA))
-    pygame.display.set_caption(TELA_TITULO)
+    pygame.init()   # inicia o pygame
+    FPSCLOCK = pygame.time.Clock() # inicia o relógio que será utilizado para controlar a taxa de atualização da tela
+    DISPLAYSURF = pygame.display.set_mode((TELA_LARGURA, TELA_ALTURA))  # cria a tela
+    pygame.display.set_caption(TELA_TITULO) # define o título da tela
 
     nave = Nave()   # instancia a nave
     projeteis = []    # inicia array no qual serão colocados os projeteis
 
 
-
+# função que executa o 'jogo'
 def jogar():
 
     # loop principal
@@ -207,6 +216,9 @@ def jogar():
             if event.type == QUIT:      # encerra o programa se fechar a janela
                 sair()
 
+            # se alguma tecla for pressionada...
+            # nota: esse tipo de evento é ativado uma única vez, quando a tecla é pressionada,
+            # mesmo que a tecla continue pressionada, não gerará um novo evento
             elif event.type == KEYDOWN:
 
                 if event.key == K_x:    # tecla 'x':    encerra o programa
@@ -215,6 +227,11 @@ def jogar():
                 elif event.key == K_SPACE:  # tecla 'espaço':   efetua disparo
                     nave.dispara()              
 
+        # no caso das teclas direcionais, iremos checar diretamente o estado das teclas
+        # para que possamos movimentar a nave com as teclas continuamente pressionadas
+        # nota: na tela, o sentido positivo do eixo 'y' é para baixo, logo, ao chamar
+        # os métodos de rotação, teremos que mudar o sinal do ângulo já que o sentido positivo
+        # de rotação será o horário 
         tecla_pressionada = pygame.key.get_pressed()
         if tecla_pressionada[K_w]:      # tecla 'w':    movimenta nave para frente
             nave.move(nave.orientacao)
@@ -231,24 +248,30 @@ def jogar():
         if tecla_pressionada[K_d]:      # tecla 'd':    gira nave no sentido horário
             nave.rotacao(NAVE_ROTACAO_ANGULO)
 
-        # atualiza tela
-        DISPLAYSURF.fill(TELA_COR_FUNDO)        
+        # executa a movimentação dos objetos e depois atualiza a tela
+        DISPLAYSURF.fill(TELA_COR_FUNDO)    # 'limpa' a tela
+        # controla os projéteis  
         for p in projeteis:
+            # remove os projéteis que ultrapassarem a duração máxima
             if p.duracao > PROJETIL_DURACAO:
                 projeteis.remove(p)
-                continue            
+                continue
+            # desenha na tela
+            # nota: foi escolhido desenhar o projétil antes de atualizar sua posição
+            # para causar um efeito melhor no momento em que ele é disparado              
             p.desenha()
+            # executa a movimentação
             p.move()        
         nave.desenha()
-        pygame.display.update()
-        FPSCLOCK.tick(TELA_FPS)
+        pygame.display.update() # aplica as atualizações na tela
+        FPSCLOCK.tick(TELA_FPS) # controla a taxa de atualização da tela
 
 
 
-# instruções para encerrar o programa
+# função que executa a rotina de encerramento do programa
 def sair():
-    pygame.quit()
-    sys.exit()
+    pygame.quit()   # encerra o pygame
+    sys.exit()  # sai do programa
 
 
 
