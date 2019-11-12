@@ -1,13 +1,15 @@
 '''
+Álgebra Linear Algorítmica 2019.2   -   Simulador Jogo2D
 
-ALA 2019.2 - Simulador Jogo2D
-https://github.com/rafaeljc/ala-simulador-jogo2d
+Descrição:  Simulador de jogo 2D no qual seus objetos são movimentados na tela utilizando apenas multiplicação de matrizes
 
+Aluno:      Rafael Jordão Clemente
+DRE:        118172210
+
+Projeto:    Gráficos 2D e transformações
+Colab:      https://colab.research.google.com/drive/1YWCrNh5y9L8RqA9gebt-a3MNNziOHw3K
+GitHub:     https://github.com/rafaeljc/ala-simulador-jogo2d
 '''
-
-# instalação:   python3 -m pip install --user numpy
-#               python3 -m pip install -U pygame --user
-
 
 # importações necessárias para executar o programa
 import numpy as np
@@ -33,12 +35,12 @@ TELA_COR_FUNDO = PRETO
 TELA_FPS = 15   # taxa de atualização da tela (em quadros por segundo)
 
 # configurações da nave
-NAVE_TRACO_LARGURA = 3
+NAVE_TRACO_LARGURA = 2
 NAVE_TRACO_COR = CINZA
 NAVE_ROTACAO_ANGULO = np.pi / 64    # em radianos
 
 # configurações do projétil
-PROJETIL_TRACO_LARGURA = 2
+PROJETIL_TRACO_LARGURA = 1
 PROJETIL_TRACO_COR = VERDE
 PROJETIL_VELOCIDADE = 20
 PROJETIL_DURACAO = 50   # por quantos 'ciclos' o projétil irá existir
